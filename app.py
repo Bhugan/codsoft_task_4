@@ -4,62 +4,65 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
-# Load the data
-df = pd.read_csv('/content/drive/MyDrive/CODESOFT Data Sets/advertising.csv')
-
-# Set up the Streamlit interface
 st.title('Sales Price Prediction Model')
 
-# Display the dataset
-st.header('Dataset')
-st.write(df.head())
+# File upload
+uploaded_file = st.file_uploader("Upload your CSV file", type="csv")
 
-# Display basic EDA
-st.header('Exploratory Data Analysis')
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
 
-# Show dataset statistics
-if st.checkbox('Show dataset statistics'):
-    st.write(df.describe())
+    # Display the dataset
+    st.header('Dataset')
+    st.write(df.head())
 
-# Check for missing values
-if st.checkbox('Show missing values'):
-    st.write(df.isna().sum())
+    # Display basic EDA
+    st.header('Exploratory Data Analysis')
 
-# Pairplot
-if st.checkbox('Show pairplot'):
-    sns.pairplot(df, x_vars=['TV', 'Radio', 'Newspaper'], y_vars='Sales', kind='reg')
-    st.pyplot(plt)
+    # Show dataset statistics
+    if st.checkbox('Show dataset statistics'):
+        st.write(df.describe())
 
-# Scatter plot of TV and Sales with fitted line
-st.header('Sales Prediction Model')
+    # Check for missing values
+    if st.checkbox('Show missing values'):
+        st.write(df.isna().sum())
 
-# Define the dependent and independent variables
-y = df['Sales']
-x = df[['TV']]
+    # Pairplot
+    if st.checkbox('Show pairplot'):
+        sns.pairplot(df, x_vars=['TV', 'Radio', 'Newspaper'], y_vars='Sales', kind='reg')
+        st.pyplot(plt)
 
-# Add a constant to the independent variables
-x = sm.add_constant(x)
+    # Scatter plot of TV and Sales with fitted line
+    st.header('Sales Prediction Model')
 
-# Fit the model
-model = sm.OLS(y, x).fit()
+    # Define the dependent and independent variables
+    y = df['Sales']
+    x = df[['TV']]
 
-# Print the model summary
-st.subheader('Model Summary')
-st.text(model.summary())
+    # Add a constant to the independent variables
+    x = sm.add_constant(x)
 
-# Plot the data and the fitted line
-st.subheader('Scatter plot of TV and Sales with fitted line')
-fig, ax = plt.subplots()
-ax.scatter(x['TV'], y)
-ax.plot(x['TV'], model.predict(x), color='red')
-ax.set_xlabel('TV')
-ax.set_ylabel('Sales')
-ax.set_title('Scatter plot of TV and Sales with fitted line')
-st.pyplot(fig)
+    # Fit the model
+    model = sm.OLS(y, x).fit()
 
-# Pairplot with the fitted line
-if st.checkbox('Show pairplot with fitted line'):
-    sns.pairplot(df, x_vars=['TV'], y_vars='Sales', kind='reg')
-    st.pyplot(plt)
+    # Print the model summary
+    st.subheader('Model Summary')
+    st.text(model.summary())
 
-# Run the app with: streamlit run sales_prediction_app.py
+    # Plot the data and the fitted line
+    st.subheader('Scatter plot of TV and Sales with fitted line')
+    fig, ax = plt.subplots()
+    ax.scatter(x['TV'], y)
+    ax.plot(x['TV'], model.predict(x), color='red')
+    ax.set_xlabel('TV')
+    ax.set_ylabel('Sales')
+    ax.set_title('Scatter plot of TV and Sales with fitted line')
+    st.pyplot(fig)
+
+    # Pairplot with the fitted line
+    if st.checkbox('Show pairplot with fitted line'):
+        sns.pairplot(df, x_vars=['TV'], y_vars='Sales', kind='reg')
+        st.pyplot(plt)
+else:
+    st.info('Please upload a CSV file to get started.')
+
