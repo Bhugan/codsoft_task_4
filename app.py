@@ -34,12 +34,11 @@ if uploaded_file is not None:
         sns.pairplot(df, x_vars=['TV', 'Radio', 'Newspaper'], y_vars='Sales', kind='reg')
         st.pyplot(plt)
 
-    # Scatter plot of TV and Sales with fitted line
     st.header('Sales Prediction Model')
 
     # Define the dependent and independent variables
     y = df['Sales']
-    X = df[['TV']]
+    X = df[['TV', 'Radio', 'Newspaper']]
 
     # Split the data into training and test sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -51,10 +50,6 @@ if uploaded_file is not None:
     # Fit the model
     model = sm.OLS(y_train, X_train).fit()
 
-    # Print the model summary
-    st.subheader('Model Summary')
-    st.text(model.summary())
-
     # Predict on the test set
     y_pred = model.predict(X_test)
     
@@ -63,27 +58,19 @@ if uploaded_file is not None:
     st.subheader('Model Accuracy')
     st.write(f'Mean Squared Error: {mse:.2f}')
 
-    # Plot the data and the fitted line
-    st.subheader('Scatter plot of TV and Sales with fitted line')
-    fig, ax = plt.subplots()
-    ax.scatter(X['TV'], y)
-    ax.plot(X['TV'], model.predict(sm.add_constant(X)), color='red')
-    ax.set_xlabel('TV')
-    ax.set_ylabel('Sales')
-    ax.set_title('Scatter plot of TV and Sales with fitted line')
-    st.pyplot(fig)
-
     # Pairplot with the fitted line
     if st.checkbox('Show pairplot with fitted line'):
-        sns.pairplot(df, x_vars=['TV'], y_vars='Sales', kind='reg')
+        sns.pairplot(df, x_vars=['TV', 'Radio', 'Newspaper'], y_vars='Sales', kind='reg')
         st.pyplot(plt)
 
     # User input for new predictions
     st.header('Make a Prediction')
     tv_budget = st.number_input('Enter TV Budget:', min_value=0.0, step=0.1)
+    radio_budget = st.number_input('Enter Radio Budget:', min_value=0.0, step=0.1)
+    newspaper_budget = st.number_input('Enter Newspaper Budget:', min_value=0.0, step=0.1)
 
     if st.button('Predict'):
-        new_data = pd.DataFrame({'const': [1], 'TV': [tv_budget]})
+        new_data = pd.DataFrame({'const': [1], 'TV': [tv_budget], 'Radio': [radio_budget], 'Newspaper': [newspaper_budget]})
         prediction = model.predict(new_data)
         st.write(f'Predicted Sales: {prediction[0]:.2f}')
 
