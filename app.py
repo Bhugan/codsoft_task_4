@@ -3,6 +3,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
 st.title('Sales Price Prediction Model')
 
@@ -37,23 +39,35 @@ if uploaded_file is not None:
 
     # Define the dependent and independent variables
     y = df['Sales']
-    x = df[['TV']]
+    X = df[['TV']]
+
+    # Split the data into training and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Add a constant to the independent variables
-    x = sm.add_constant(x)
+    X_train = sm.add_constant(X_train)
+    X_test = sm.add_constant(X_test)
 
     # Fit the model
-    model = sm.OLS(y, x).fit()
+    model = sm.OLS(y_train, X_train).fit()
 
     # Print the model summary
     st.subheader('Model Summary')
     st.text(model.summary())
 
+    # Predict on the test set
+    y_pred = model.predict(X_test)
+    
+    # Compute and display the accuracy (mean squared error)
+    mse = mean_squared_error(y_test, y_pred)
+    st.subheader('Model Accuracy')
+    st.write(f'Mean Squared Error: {mse:.2f}')
+
     # Plot the data and the fitted line
     st.subheader('Scatter plot of TV and Sales with fitted line')
     fig, ax = plt.subplots()
-    ax.scatter(x['TV'], y)
-    ax.plot(x['TV'], model.predict(x), color='red')
+    ax.scatter(X['TV'], y)
+    ax.plot(X['TV'], model.predict(sm.add_constant(X)), color='red')
     ax.set_xlabel('TV')
     ax.set_ylabel('Sales')
     ax.set_title('Scatter plot of TV and Sales with fitted line')
@@ -63,6 +77,15 @@ if uploaded_file is not None:
     if st.checkbox('Show pairplot with fitted line'):
         sns.pairplot(df, x_vars=['TV'], y_vars='Sales', kind='reg')
         st.pyplot(plt)
+
+    # User input for new predictions
+    st.header('Make a Prediction')
+    tv_budget = st.number_input('Enter TV Budget:', min_value=0.0, step=0.1)
+
+    if st.button('Predict'):
+        new_data = pd.DataFrame({'const': [1], 'TV': [tv_budget]})
+        prediction = model.predict(new_data)
+        st.write(f'Predicted Sales: {prediction[0]:.2f}')
+
 else:
     st.info('Please upload a CSV file to get started.')
-
